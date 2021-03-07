@@ -8,6 +8,7 @@ import { Rooms } from '../../../models/server/raw';
 import { callbacks } from '../../../callbacks';
 import { FileUpload } from '../lib/FileUpload';
 import { canAccessRoom } from '../../../authorization/server/functions/canAccessRoom';
+import { executeSendMessage } from '../../../lib/server/methods/sendMessage.js';
 
 Meteor.methods({
 	async sendFileMessage(roomId, store, file, msgData = {}) {
@@ -23,6 +24,7 @@ Meteor.methods({
 		}
 
 		check(msgData, {
+			_id: Match.Optional(String),
 			avatar: Match.Optional(String),
 			emoji: Match.Optional(String),
 			alias: Match.Optional(String),
@@ -82,7 +84,7 @@ Meteor.methods({
 			attachments: [attachment],
 		}, msgData);
 
-		msg = Meteor.call('sendMessage', msg);
+		msg = executeSendMessage(user._id, msg);
 
 		Meteor.defer(() => callbacks.run('afterFileUpload', { user, room, message: msg }));
 
